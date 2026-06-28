@@ -1,6 +1,5 @@
 package com.finance_crypto.config;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -12,14 +11,10 @@ import com.finance_crypto.repository.UserRepository;
 @Configuration
 public class AdminUserConfig implements CommandLineRunner {
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
+    private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
-    @Autowired
-    private BCryptPasswordEncoder bCryptPasswordEncoder;
-
-    public AdminUserConfig(UserRepository userRepository,
-            BCryptPasswordEncoder bCryptPasswordEncoder) {
+    public AdminUserConfig(UserRepository userRepository, BCryptPasswordEncoder bCryptPasswordEncoder) {
         this.userRepository = userRepository;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
     }
@@ -27,18 +22,14 @@ public class AdminUserConfig implements CommandLineRunner {
     @Override
     @Transactional
     public void run(String... args) throws Exception {
-
-        var userAdmin = userRepository.findByUsername("admin");
-
-        userAdmin.ifPresentOrElse(user -> {
-            System.out.println("Admin user already exists");
-        }, () -> {
-            var user = new User();
-            user.setUsername("admin");
-            user.setPassword(bCryptPasswordEncoder.encode("admin"));
-            userRepository.save(user);
-        });
-
+        userRepository.findByUsername("admin").ifPresentOrElse(
+                user -> System.out.println("admin already exists"),
+                () -> {
+                    var user = new User();
+                    user.setUsername("admin");
+                    user.setPassword(bCryptPasswordEncoder.encode("admin"));
+                    userRepository.save(user);
+                }
+        );
     }
-
 }

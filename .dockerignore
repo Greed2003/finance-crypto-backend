@@ -1,0 +1,7 @@
+target/
+.git/
+*.md
+*.log
+docker-compose*.yml
+Jenkinsfile
+.mvn/wrapper/maven-wrapper.jar

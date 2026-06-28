@@ -2,7 +2,6 @@ package com.finance_crypto.controller;
 
 import java.time.Instant;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -20,14 +19,9 @@ import com.finance_crypto.repository.UserRepository;
 @RestController
 public class TokenController {
 
-    @Autowired
-    private JwtEncoder jwtEncoder;
-
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private BCryptPasswordEncoder bCryptPasswordEncoder;
+    private final JwtEncoder jwtEncoder;
+    private final UserRepository userRepository;
+    private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
     public TokenController(JwtEncoder jwtEncoder, UserRepository userRepository,
             BCryptPasswordEncoder bCryptPasswordEncoder) {
@@ -38,7 +32,6 @@ public class TokenController {
 
     @PostMapping("/login")
     public ResponseEntity<LoginResponseDTO> login(@RequestBody LoginRequestDTO loginRequest) {
-
         var user = userRepository.findByUsername(loginRequest.username());
 
         if (user.isEmpty() || !user.get().isLoginCorrect(loginRequest, bCryptPasswordEncoder)) {
@@ -48,12 +41,15 @@ public class TokenController {
         var now = Instant.now();
         var expiresIn = 800L;
 
-        var claims = JwtClaimsSet.builder().issuer("myBackend").subject(user.get().getUserId().toString()).issuedAt(now)
-                .expiresAt(now.plusSeconds(expiresIn)).build();
+        var claims = JwtClaimsSet.builder()
+                .issuer("myBackend")
+                .subject(user.get().getUserId().toString())
+                .issuedAt(now)
+                .expiresAt(now.plusSeconds(expiresIn))
+                .build();
 
         var jwtValue = jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
 
         return ResponseEntity.ok(new LoginResponseDTO(jwtValue, expiresIn));
     }
-
 }
